@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from json_storage import load_learning, save_learning
 from repository_layer import MemoryRepository
 from service_layer import LearningService
 
@@ -11,6 +14,9 @@ MENU = """
 6. записать ученика на курс
 7. показать курсы ученика
 8. отменить запись на курс
+9. удалить курс
+10. сохранить данные в JSON
+11. открыть данные из JSON
 0. выйти
 """
 
@@ -23,6 +29,13 @@ def read_id(prompt):
     if item_id < 1:
         raise ValueError("ID должен быть больше нуля")
     return item_id
+
+
+def read_json_path():
+    path = Path(input("путь к .json [learning.json]: ").strip() or "learning.json")
+    if path.suffix.lower() != ".json":
+        raise ValueError("имя файла должно оканчиваться на .json")
+    return path
 
 
 def print_courses(courses):
@@ -79,10 +92,17 @@ def main():
                 course_id = read_id("ID курса: ")
                 service.delete_course(course_id)
                 print("курс удалён")
-
+            elif choice == "10":
+                path = read_json_path()
+                save_learning(path, service)
+                print(f"данные сохранены в {path}")
+            elif choice == "11":
+                path = read_json_path()
+                service = load_learning(path)
+                print(f"данные открыты из {path}")
             else:
                 print("такого пункта меню нет")
-        except ValueError as error:
+        except (ValueError, OSError) as error:
             print(f"ошибка: {error}")
         except (EOFError, KeyboardInterrupt):
             print()

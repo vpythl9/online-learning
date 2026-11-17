@@ -24,9 +24,22 @@ class Repository(ABC):
 
 
 class MemoryRepository(Repository):
-    def __init__(self):
+    def __init__(self, items=(), next_id=1):
         self._items = {}
-        self._next_id = 1
+        for item in items:
+            if type(item.id) is not int or item.id < 1:
+                raise ValueError("ID должен быть положительным целым числом")
+            if item.id in self._items:
+                raise ValueError(f"повторяющийся ID {item.id}")
+            self._items[item.id] = item
+
+        if type(next_id) is not int or next_id <= max(self._items, default=0):
+            raise ValueError("некорректный счётчик ID")
+        self._next_id = next_id
+
+    @property
+    def next_id(self):
+        return self._next_id
 
     def add(self, item):
         if item.id is not None:
